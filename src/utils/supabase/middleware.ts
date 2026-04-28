@@ -55,7 +55,7 @@ export async function updateSession(request: NextRequest) {
   // 1. ROUTE PREFIXES
   // =================================================================
   // We check if the path starts with these prefixes to protect all sub-routes automatically
-  const isAuthRoute = path.startsWith("/login") || path.startsWith("/register");
+  const isAuthRoute = path.startsWith("/auth"); 
 
   const isRoleRoute =
     path.startsWith("/admin") ||

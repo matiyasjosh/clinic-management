@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
@@ -10,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Register and manage patients',
 }
 
-type UserRole = 'admin' | 'receptionist' | 'doctor' | 'patient'
+type UserRole = 'admin' | 'receptionist' | 'doctor' | 'patient_user'
 
 interface Patient {
   id: string
@@ -39,41 +38,33 @@ export default async function ReceptionistPatientsPage() {
     .eq('id', user.id)
     .single()
 
-  const userRole = (profile?.role || 'patient') as UserRole
+  const userRole = (profile?.role || 'patient_user') as UserRole
 
   if (userRole !== 'receptionist' && userRole !== 'admin') {
     redirect('/dashboard')
   }
 
-  const { data: patients = [] } = await supabase
-    .from('profiles')
+  // UPDATED: Fetching directly from the new 'patient' table (Medical Records)
+  const { data: dbPatients } = await supabase
+    .from('patient')
     .select('*')
-    .eq('role', 'patient')
+    .order('created_at', { ascending: false })
 
-  const mockPatients: Patient[] = patients && patients?.length > 0 ? patients : [
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '+1 (555) 123-4567',
-      dateOfBirth: '1990-05-15',
-      address: '123 Main St, City, State 12345',
-      registrationDate: '2024-01-10',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '+1 (555) 234-5678',
-      dateOfBirth: '1985-08-20',
-      address: '456 Oak Ave, City, State 54321',
-      registrationDate: '2024-02-15',
-    },
-  ]
+  // Map the database columns to the frontend Patient interface
+  const patients: Patient[] = dbPatients ? dbPatients.map((p) => ({
+    id: p.id,
+    name: p.full_name,
+    email: p.contact_email,
+    phone: p.contact_phone,
+    dateOfBirth: p.date_of_birth,
+    address: p.address,
+    // Format the date properly for the table
+    registrationDate: new Date(p.created_at).toLocaleDateString(),
+  })) : []
 
   return (
     <DashboardLayout userRole={userRole}>
-      <ReceptionistPatientsContent patients={mockPatients} />
+      <ReceptionistPatientsContent patients={patients} />
     </DashboardLayout>
   )
 }
