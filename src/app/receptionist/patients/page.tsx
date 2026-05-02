@@ -28,14 +28,11 @@ export default async function ReceptionistPatientsPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/auth/login')
-  }
 
   const { data: profile } = await supabase
     .from('profile')
     .select('role')
-    .eq('id', user.id)
+    .eq('id', user?.id)
     .single()
 
   const userRole = (profile?.role || 'patient_user') as UserRole

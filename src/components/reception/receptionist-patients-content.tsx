@@ -1,26 +1,14 @@
 
 'use client'
 
+import React from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Plus, Edit2, Trash2, Search, Eye, Loader2 } from 'lucide-react'
+import { Plus, Edit2, Search, Eye, Loader2 } from 'lucide-react'
 import { useReceptionistPatient } from '@/hooks/reception/use-receptionist-patient'
-
-interface Patient {
-  id: string
-  name?: string
-  email?: string
-  phone?: string
-  dateOfBirth?: string
-  address?: string
-  registrationDate?: string
-}
-
-interface ReceptionistPatientsContentProps {
-  patients: Patient[]
-}
+import { ReceptionistPatientsContentProps } from '@/types/patient.types'
 
 export default function ReceptionistPatientsContent({ patients }: ReceptionistPatientsContentProps) {
   const {
@@ -28,9 +16,15 @@ export default function ReceptionistPatientsContent({ patients }: ReceptionistPa
     isDialogOpen,
     isPending,
     error,
+    editingPatientId,
+    editFormData,
     setSearchQuery,
     setIsDialogOpen,
     handleRegisterPatient,
+    handleEditInputChange,
+    handleEditClick,
+    handleCancelEdit,
+    handleSaveEdit,
   } = useReceptionistPatient();
 
   const filteredPatients = patients.filter(
@@ -39,6 +33,8 @@ export default function ReceptionistPatientsContent({ patients }: ReceptionistPa
       patient.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       patient.phone?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  console.log("here are patients:", patients[0].contact_phone);
 
   return (
     <div className="space-y-8">
@@ -114,23 +110,102 @@ export default function ReceptionistPatientsContent({ patients }: ReceptionistPa
             </thead>
             <tbody>
               {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-6 py-4 text-gray-900 font-medium">{patient.name}</td>
-                  <td className="px-6 py-4 text-gray-600">{patient.email}</td>
-                  <td className="px-6 py-4 text-gray-600">{patient.phone}</td>
-                  <td className="px-6 py-4 text-gray-600">{patient.dateOfBirth}</td>
-                  <td className="px-6 py-4 text-gray-600">{patient.registrationDate}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
+                <React.Fragment key={patient.id}>
+                  <tr className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="px-6 py-4 text-gray-900 font-medium">{patient.name}</td>
+                    <td className="px-6 py-4 text-gray-600">{patient.email ? patient.email : "Null"}</td>
+                    <td className="px-6 py-4 text-gray-600">{patient.contact_phone ? patient.contact_phone : "Null"}</td>
+                    <td className="px-6 py-4 text-gray-600">{patient.dateOfBirth}</td>
+                    <td className="px-6 py-4 text-gray-600">{patient.registrationDate}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                          onClick={() => handleEditClick(patient)}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                  {editingPatientId === patient.id && editFormData && (
+                    <tr className="border-b-2 border-emerald-200 bg-emerald-50">
+                      <td colSpan={6} className="px-6 py-6">
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Patient Information</h3>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                              <Input
+                                value={editFormData.name || ''}
+                                onChange={(e) => handleEditInputChange('name', e.target.value)}
+                                placeholder="Full Name"
+                                className="w-full"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                              <Input
+                                type="email"
+                                value={editFormData.email || ''}
+                                onChange={(e) => handleEditInputChange('email', e.target.value)}
+                                placeholder="Email Address"
+                                className="w-full"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                              <Input
+                                value={editFormData.phone || ''}
+                                onChange={(e) => handleEditInputChange('phone', e.target.value)}
+                                placeholder="Phone Number"
+                                className="w-full"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                              <Input
+                                type="date"
+                                value={editFormData.dateOfBirth || ''}
+                                onChange={(e) => handleEditInputChange('dateOfBirth', e.target.value)}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                              <Input
+                                value={editFormData.address || ''}
+                                onChange={(e) => handleEditInputChange('address', e.target.value)}
+                                placeholder="Address"
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-3 pt-4 justify-end">
+                            <Button
+                              variant="outline"
+                              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                              onClick={handleSaveEdit}
+                            >
+                              Save Changes
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
