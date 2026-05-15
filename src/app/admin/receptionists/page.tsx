@@ -21,7 +21,7 @@ export default async function ReceptionistsPage() {
   const receptionists = data ?? [];
 
   return (
-    <DashboardLayout userRole={"receptionist"}>
+    <DashboardLayout userRole={"admin"}>
       <ReceptionistsContent receptionists={receptionists} />
     </DashboardLayout>
   )
