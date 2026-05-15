@@ -51,11 +51,10 @@ export default async function ReceptionistPatientsPage() {
   const patients: Patient[] = dbPatients ? dbPatients.map((p) => ({
     id: p.id,
     name: p.full_name,
-    email: p.contact_email,
-    phone: p.contact_phone,
+    email: p.email,
+    phone: p.phone,
     dateOfBirth: p.date_of_birth,
     address: p.address,
-    // Format the date properly for the table
     registrationDate: new Date(p.created_at).toLocaleDateString(),
   })) : []
 

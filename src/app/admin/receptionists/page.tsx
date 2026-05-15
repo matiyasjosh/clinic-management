@@ -43,7 +43,6 @@ export default async function ReceptionistsPage() {
     .eq('role', 'receptionist');
 
   const receptionists = data ?? [];
-  console.log("here they are: ", data);
 
   return (
     <DashboardLayout userRole={userRole}>
