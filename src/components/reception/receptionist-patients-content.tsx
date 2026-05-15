@@ -34,8 +34,6 @@ export default function ReceptionistPatientsContent({ patients }: ReceptionistPa
       patient.phone?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  console.log("here are patients:", patients[0].contact_phone);
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
