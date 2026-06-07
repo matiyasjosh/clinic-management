@@ -36,7 +36,7 @@ export default async function DoctorAppointmentsPage() {
   }
 
   const { data } = await supabase
-    .from('appointments')
+    .from('appointment')
     .select('*')
     .eq('doctor_id', user.id)
 
